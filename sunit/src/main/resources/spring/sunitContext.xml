@@ -14,13 +14,14 @@
                         http://www.openscore.org/schema/score
                         http://www.openscore.org/schema/score.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!--<bean class="org.openscore.lang.api.configuration.SlangSpringConfiguration"/>-->
-    <bean class="org.openscore.lang.compiler.configuration.SlangCompilerSpringConfig"/>
+    <bean class="org.openscore.lang.api.configuration.SlangSpringConfiguration"/>
+    <!--<bean class="org.openscore.lang.compiler.configuration.SlangCompilerSpringConfig"/>-->
+    <bean class="org.openscore.lang.sunit.MockTransformer"/>
 
     <context:annotation-config/>
 
-    <!--<score:engine />-->
+    <score:engine />
 
-    <!--<score:worker uuid="-1"/>-->
+    <score:worker uuid="-1"/>
 
 </beans>

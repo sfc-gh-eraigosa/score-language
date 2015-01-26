@@ -46,7 +46,7 @@ public class ExecutionStepFactory {
         Validate.notNull(preTaskData, "preTaskData is null");
         Map<String, Serializable> actionData = new HashMap<>();
         actionData.put(ScoreLangConstants.TASK_INPUTS_KEY, preTaskData.get(SlangTextualKeys.DO_KEY));
-        actionData.put(ScoreLangConstants.HOOKS, "TBD"); //todo add implementation for user custom hooks
+        actionData.put(ScoreLangConstants.HOOKS, (HashMap)preTaskData); //todo add implementation for user custom hooks
         actionData.put(ScoreLangConstants.NODE_NAME_KEY, taskName);
         actionData.put(ScoreLangConstants.REF_ID, refId);
         actionData.put(ScoreLangConstants.NEXT_STEP_ID_KEY, index + 1);

@@ -9,10 +9,16 @@ flow:
   workflow:
     run_mock:
       do:
-        ops.basic_op:
-          - op_name: simple_op
+        ops.operation_to_test:
+          - input1: "'foo'"
+      mock:
+        action_outputs:
+          - action_output_1: "'1'"
+          - action_output_2: "'2'"
       publish:
         - action_inputs
         - action_outputs
         - operation_outputs
-        - operation_result
+        - operation_result: |
+            action_output_1 = "'1'"
+            action_output_2 = "'2'"

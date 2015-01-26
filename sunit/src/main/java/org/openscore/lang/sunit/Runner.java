@@ -9,37 +9,76 @@
  *******************************************************************************/
 package org.openscore.lang.sunit;
 
-import org.openscore.lang.compiler.SlangCompiler;
-import org.openscore.lang.compiler.SlangCompilerImpl;
+import org.openscore.api.ExecutionPlan;
+import org.openscore.api.ExecutionStep;
+import org.openscore.events.ScoreEvent;
+import org.openscore.events.ScoreEventListener;
+import org.openscore.lang.api.Slang;
+import org.openscore.lang.api.SlangImpl;
 import org.openscore.lang.compiler.SlangSource;
+import org.openscore.lang.entities.ActionType;
 import org.openscore.lang.entities.CompilationArtifact;
+import org.openscore.lang.entities.ScoreLangConstants;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class Runner {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException {
         AbstractApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring/sunitContext.xml");
         context.registerShutdownHook();
-        try {
-            SlangCompiler slang = context.getBean(SlangCompilerImpl.class);
+            Slang slang = context.getBean(SlangImpl.class);
             URI flowSource = getUri("/sunit/tests/simple-test.sl");
             URI opSource = getUri("/sunit/tests/ops/basic_op.sl");
 
             HashSet<SlangSource> dependencies = new HashSet<>();
             dependencies.add(SlangSource.fromFile(opSource));
-            CompilationArtifact compilationArtifact = slang.compileFlow(SlangSource.fromFile(flowSource), dependencies);
+            CompilationArtifact compilationArtifact = slang.compile(SlangSource.fromFile(flowSource), dependencies);
             if (compilationArtifact != null) {
                 System.out.println("Complied successfully");
             }
-        } catch (Throwable throwable) {
-            System.out.println(throwable.getMessage());
+            replaceWithMock(compilationArtifact);
+
+            slang.subscribeOnAllEvents(new ScoreEventListener() {
+                @Override
+                public void onEvent(ScoreEvent scoreEvent) throws InterruptedException {
+                    System.out.println(scoreEvent.getEventType() + ": " + scoreEvent.getData());
+                }
+            });
+
+            slang.run(compilationArtifact, new HashMap(), new HashMap<String, Serializable>());
+
+
+//        System.exit(136);
+    }
+
+    private static void replaceWithMock(CompilationArtifact compilationArtifact) {
+        Map<Long, ExecutionStep> steps = compilationArtifact.getExecutionPlan().getSteps();
+        ExecutionStep startTaskStep = steps.get(2L);
+        Map<String, ?> actionData = startTaskStep.getActionData();
+        Map hooks = (Map)actionData.get(ScoreLangConstants.HOOKS);
+        Map mockData = (Map)hooks.get("mock");
+        String executableName = (String) actionData.get(ScoreLangConstants.REF_ID);
+        List taskInputs = (List) actionData.get(ScoreLangConstants.TASK_INPUTS_KEY);
+        Map<String, ExecutionPlan> dependencies = compilationArtifact.getDependencies();
+        ExecutionPlan executableExecPlan = dependencies.get(executableName);
+        ExecutionStep doActionStep = executableExecPlan.getSteps().get(2L);
+        Map<String, Object> doActionActionData = (Map<String, Object>) doActionStep.getActionData();
+        doActionActionData.put(ScoreLangConstants.ACTION_TYPE, ActionType.PYTHON);
+        List<Map> action_outputs = (List<Map>) mockData.get("action_outputs");
+        StringBuilder script = new StringBuilder();
+        for(Map outputs : action_outputs){
+            script.append(outputs.keySet().iterator().next()).append(" = ").append(outputs.values().iterator().next()).append(System.lineSeparator());
         }
-        System.exit(136);
+        doActionActionData.put(ScoreLangConstants.PYTHON_SCRIPT_KEY, script.toString());
     }
 
     private static URI getUri(String path) throws URISyntaxException {
