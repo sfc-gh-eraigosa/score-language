@@ -38,9 +38,11 @@ public class Runner {
             Slang slang = context.getBean(SlangImpl.class);
             URI flowSource = getUri("/sunit/tests/simple-test.sl");
             URI opSource = getUri("/sunit/tests/ops/basic_op.sl");
+            URI validatorSource = getUri("/sunit/validators/equal_validator.sl");
 
             HashSet<SlangSource> dependencies = new HashSet<>();
             dependencies.add(SlangSource.fromFile(opSource));
+            dependencies.add(SlangSource.fromFile(validatorSource));
             CompilationArtifact compilationArtifact = slang.compile(SlangSource.fromFile(flowSource), dependencies);
             if (compilationArtifact != null) {
                 System.out.println("Complied successfully");
@@ -56,8 +58,6 @@ public class Runner {
 
             slang.run(compilationArtifact, new HashMap(), new HashMap<String, Serializable>());
 
-
-//        System.exit(136);
     }
 
     private static void replaceWithMock(CompilationArtifact compilationArtifact) {

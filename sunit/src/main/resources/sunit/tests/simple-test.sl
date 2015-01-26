@@ -10,15 +10,27 @@ flow:
     run_mock:
       do:
         ops.operation_to_test:
-          - input1: "'foo'"
+          - host: "'host_name'"
+          - port: 22
       mock:
         action_outputs:
-          - action_output_1: "'1'"
-          - action_output_2: "'2'"
+          - status: "'1'"
+          - result: "'good result'"
+          - error_message: "'Too Bad...'"
       publish:
-        - action_inputs
-        - action_outputs
-        - operation_outputs
-        - operation_result: |
-            action_output_1 = "'1'"
-            action_output_2 = "'2'"
+        - status
+        - message
+        - command_result
+
+#        - action_inputs
+#        - action_outputs
+#        - operation_outputs
+#        - operation_result: |
+#            action_output_1 == "'1'"
+#            action_output_2 == "'2'"
+
+    validate_status:
+      do:
+        validators.equal_validator:
+          - param: status
+          - value: "'1'"

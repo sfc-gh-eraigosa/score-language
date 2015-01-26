@@ -3,17 +3,17 @@ namespace: sunit.tests.ops
 operations:
   - operation_to_test:
       inputs:
-        - input1
-        - input2: input1
-        - input3: "'input3'"
+        - host
+        - port
+        - command: "'cmd'"
       action:
         python_script: |
-          action_outputs_1 = "10"
-          action_outputs_2 = "20"
+          #some meaningful action
       outputs:
-        - output_1: action_outputs_1
-        - output_2: "'output_2'"
+        - message: if error_message not null error_message else "Good"
+        - command_result: result
+        - status
       results:
-        - SUCCESS: output_2 == "output_2"
-        - CUSTOM: output_2 == "custom_output"
+        - SUCCESS: int(status) == 1
+        - FAILURE
 
