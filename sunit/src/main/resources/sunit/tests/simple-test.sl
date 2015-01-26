@@ -1,7 +1,7 @@
-package: sunit.tests
+namespace: sunit.tests
 
 imports:
-  ops: sunit.ops
+  ops: sunit.tests.ops
   validators: sunit.validators
 
 flow:
@@ -9,19 +9,10 @@ flow:
   workflow:
     run_mock:
       do:
-        ops.mock_op:
+        ops.basic_op:
           - op_name: simple_op
       publish:
         - action_inputs
         - action_outputs
         - operation_outputs
         - operation_result
-
-    validate:
-      do:
-        ops.compute_daylight_time_zone:
-          - time_zone_as_string: time_zone
-      publish:
-        - daylight_time_zone: daylight_time_zone
-  results:
-    - SUCCESS
